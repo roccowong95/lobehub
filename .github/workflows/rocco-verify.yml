@@ -79,6 +79,7 @@ jobs:
           file: ./Dockerfile
           platforms: linux/amd64
           push: true
+          provenance: false
           tags: registry.cn-shenzhen.aliyuncs.com/happyfew/lobehub:fix-rocco-${{ github.sha }}
           labels: |
             org.opencontainers.image.revision=${{ github.sha }}
