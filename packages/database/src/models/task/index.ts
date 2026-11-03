@@ -233,13 +233,14 @@ export class TaskModel {
   async groupList(
     options: TaskListFilterOptions & {
       excludeStatuses?: string[];
-      groupBy?: 'agent' | 'assignee' | 'member' | 'priority';
+      groupBy?: 'agent' | 'assignee' | 'label' | 'member' | 'priority';
       groups?: Array<{
         key: string;
         limit?: number;
         offset?: number;
         statuses: string[];
       }>;
+      labelGroupId?: string;
     },
   ): Promise<
     Array<{
@@ -247,6 +248,7 @@ export class TaskModel {
       assigneeUserId?: string | null;
       hasMore: boolean;
       key: string;
+      labelId?: string | null;
       limit: number;
       offset: number;
       priority?: number;
