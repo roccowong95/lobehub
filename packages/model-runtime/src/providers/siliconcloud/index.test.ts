@@ -32,6 +32,33 @@ describe('LobeSiliconCloudAI - custom features', () => {
     );
   });
 
+  describe('embeddings', () => {
+    it.each([
+      { model: 'BAAI/bge-m3', dimensions: 1024, expectedDimensions: undefined },
+      { model: 'BAAI/bge-m3', dimensions: 512, expectedDimensions: 512 },
+      { model: 'other-model', dimensions: 1024, expectedDimensions: 1024 },
+    ])('preserves the requested dimensions unless BGE-M3 uses its native size', async ({
+      model,
+      dimensions,
+      expectedDimensions,
+    }) => {
+      const create = vi.spyOn(instance.client.embeddings, 'create').mockResolvedValue({
+        data: [{ embedding: [1, 2] }],
+      } as any);
+
+      await expect(instance.embeddings({ model, dimensions, input: ['memory'] })).resolves.toEqual([
+        [1, 2],
+      ]);
+      expect(create).toHaveBeenCalledWith(
+        expect.objectContaining({ model, input: ['memory'] }),
+        expect.any(Object),
+      );
+      const request = create.mock.calls[0][0];
+      if (expectedDimensions === undefined) expect(request).not.toHaveProperty('dimensions');
+      else expect(request.dimensions).toBe(expectedDimensions);
+    });
+  });
+
   describe('handlePayload', () => {
     it('should limit max_tokens to 16384', async () => {
       await instance.chat({
