@@ -12,6 +12,7 @@ import { TRPCError } from '@trpc/server';
 import debug from 'debug';
 
 import { TopicTrigger } from '@/const/topic';
+import { appEnv } from '@/envs/app';
 import { AgentModel } from '@/database/models/agent';
 import { BriefModel } from '@/database/models/brief';
 import { TaskModel } from '@/database/models/task';
@@ -420,6 +421,7 @@ export class TaskRunnerService {
       log('runTask: %s (continue=%s, model=%s)', taskIdentifier, continueTopicId, model);
 
       const result = await aiAgentService.execAgent({
+        ...(appEnv.TASK_AGENT_MESSAGE_PATCH && { clientProtocol: 2 as const }),
         ...(onOperationCreated ? { onOperationCreated } : {}),
         ...(isSlug ? { slug: agentRef } : { agentId: agentRef }),
         additionalPluginIds: pluginIds,

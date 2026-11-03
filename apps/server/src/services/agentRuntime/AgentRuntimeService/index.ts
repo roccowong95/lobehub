@@ -236,6 +236,11 @@ export class AgentRuntimeService {
     return this.coordinator;
   }
 
+  /** Return the message protocol declared for an operation, if one was declared. */
+  async getOperationClientProtocol(operationId: string): Promise<1 | 2 | undefined> {
+    return (await this.coordinator.loadAgentState(operationId))?.host?.clientProtocol;
+  }
+
   /**
    * The view the sibling modules get: the collaborators through getters, so a
    * module reads a field when it uses it (as a method body did), and the

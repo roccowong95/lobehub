@@ -136,6 +136,12 @@ Business builds enable Gateway Mode automatically. Self-hosted deployments can s
 - Default: `1`
 - Example: `2`
 
+### `TASK_AGENT_MESSAGE_PATCH`
+
+- Type: Optional
+- Description: Set to `1` to opt server-started Task runs and their child operations into protocol-2 message patches. Only enable when all clients observing those runs support message patches; older clients may not display updates correctly. This setting does not select the gateway WebSocket protocol.
+- Default: disabled
+
 ### `AGENT_GATEWAY_INTERNAL_URL`
 
 - Type: Optional
