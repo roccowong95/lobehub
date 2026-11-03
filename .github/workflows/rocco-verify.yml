@@ -39,6 +39,11 @@ jobs:
           apps/server/src/services/aiAgent/__tests__/execGroupMember.test.ts
           apps/server/src/services/agentRuntime/AgentRuntimeService/index.ts
           packages/env/src/app.ts
+          packages/agent-runtime/src/utils/tokenCounter.ts
+          packages/agent-runtime/src/utils/tokenCounter.test.ts
+          packages/agent-runtime/src/agents/GeneralChatAgent.ts
+          packages/agent-runtime/src/agents/__tests__/GeneralChatAgent.test.ts
+          packages/locales/src/default/setting.ts
 
   image:
     name: Build amd64 image

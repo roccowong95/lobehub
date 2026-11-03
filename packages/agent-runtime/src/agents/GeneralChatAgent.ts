@@ -62,10 +62,9 @@ const UNRESOLVED_TOOL_REASON = 'tool_name_unresolved';
  */
 const UNRESOLVED_TOOL_FEEDBACK_LIMIT = 2;
 const PLUGIN_SCHEMA_SEPARATOR = '____';
-// Leave 35% of the model window for server-side context engineering (system
-// role, knowledge, memories, skills, etc.) and the model's completion. The
-// initial 50% threshold still supplies the lower side of the hysteresis band.
-const DEFAULT_RECOMPRESSION_THRESHOLD_RATIO = 0.65;
+// Leave 20% of the model window for server-side context engineering and the
+// model's completion after a summary already exists.
+const DEFAULT_RECOMPRESSION_THRESHOLD_RATIO = 0.8;
 
 /**
  * ChatAgent - The "Brain" of the chat agent

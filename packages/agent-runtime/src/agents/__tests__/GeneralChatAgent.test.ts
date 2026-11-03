@@ -1231,7 +1231,7 @@ describe('GeneralChatAgent', () => {
           { content: 'Existing summary', role: 'compressedGroup' },
           {
             content: '',
-            metadata: { usage: { totalOutputTokens: 34_000 } },
+            metadata: { usage: { totalOutputTokens: 42_000 } },
             role: 'assistant',
           },
           { content: 'Large tool result', role: 'tool', tool_call_id: 'call-1' },
@@ -2494,8 +2494,8 @@ describe('GeneralChatAgent', () => {
     it('plans previews for the call after compression', async () => {
       const agent = new GeneralChatAgent({
         agentConfig: { maxSteps: 100 },
-        // Each paper is ~20k tokens; after compression the 0.65 recompression
-        // ratio leaves ~31k raw tokens, room for one of the two new papers.
+        // Each paper is ~20k tokens; after compression the 0.8 recompression
+        // ratio leaves ~38k raw tokens, room for one of the two new papers.
         compressionConfig: { enabled: true, maxWindowToken: 60_000 },
         modelRuntimeConfig: mockModelRuntimeConfig,
         operationId: 'test-session',

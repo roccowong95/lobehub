@@ -1466,7 +1466,7 @@ export default {
   'settingImage.defaultCount.label': 'Default Image Count',
   'settingImage.defaultCount.title': 'Image Generation',
   'settingModel.enableContextCompression.desc':
-    'Automatically compress historical messages into summaries when conversation exceeds 64,000 tokens, saving 60-80% token usage',
+    'Automatically compress historical messages into summaries when the context approaches the model window limit',
   'settingModel.enableContextCompression.title': 'Enable Auto Context Compression',
   'settingModel.enableMaxTokens.title': 'Enable Max Tokens Limit',
   'settingModel.enableReasoningEffort.title': 'Enable Reasoning Effort Adjustment',
