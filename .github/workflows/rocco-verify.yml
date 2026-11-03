@@ -4,7 +4,6 @@ on:
   workflow_dispatch:
   push:
     branches: [fix/rocco]
-    paths: [.github/workflows/rocco-verify.yml]
 
 permissions:
   contents: read
