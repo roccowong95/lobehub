@@ -3,6 +3,20 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { AiAgentService } from '../index';
 
+const protocolMocks = vi.hoisted(() => ({ enabled: false, loadState: vi.fn() }));
+vi.mock('@/envs/app', async (importOriginal) => {
+  const original = await importOriginal<typeof import('@/envs/app')>();
+  return {
+    ...original,
+    appEnv: {
+      ...original.appEnv,
+      get TASK_AGENT_MESSAGE_PATCH() {
+        return protocolMocks.enabled;
+      },
+    },
+  };
+});
+
 // Mock trusted client to avoid server-side env access
 vi.mock('@/libs/trusted-client', () => ({
   generateTrustedClientToken: vi.fn().mockReturnValue(undefined),
@@ -96,6 +110,7 @@ vi.mock('@/server/services/agent', () => ({
 vi.mock('@/server/services/agentRuntime', () => ({
   AgentRuntimeService: vi.fn().mockImplementation(function () {
     return {
+      getOperationClientProtocol: protocolMocks.loadState,
       createOperation: vi.fn().mockResolvedValue({
         autoStarted: true,
         messageId: 'queue-msg-1',
@@ -146,6 +161,8 @@ describe('AiAgentService.execSubAgent', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    protocolMocks.enabled = false;
+    protocolMocks.loadState.mockReset();
 
     // Reset mock implementations
     mockThreadModel.create.mockResolvedValue({
@@ -164,6 +181,48 @@ describe('AiAgentService.execSubAgent', () => {
   });
 
   describe('successful isolated execution', () => {
+    it('inherits protocol 2 from an opted-in Task parent, but never from legacy or non-task runs', async () => {
+      const spy = vi
+        .spyOn(service, 'execAgent')
+        .mockResolvedValue({ operationId: 'child', success: true } as any);
+      const params = {
+        agentId: 'agent-1',
+        instruction: 'run',
+        parentMessageId: 'tool-1',
+        parentOperationId: 'parent-1',
+        topicId: 'topic-1',
+      };
+      protocolMocks.enabled = true;
+      mockOperationFindById.mockResolvedValue({ trigger: 'task' });
+      protocolMocks.loadState.mockResolvedValue(2);
+      await service.execVirtualSubAgent(params);
+      expect(spy).toHaveBeenLastCalledWith(expect.objectContaining({ clientProtocol: 2 }));
+
+      mockOperationFindById.mockResolvedValue({ taskId: 'task-1', trigger: null });
+      await service.execVirtualSubAgent(params);
+      expect(spy).toHaveBeenLastCalledWith(expect.objectContaining({ clientProtocol: 2 }));
+
+      protocolMocks.enabled = false;
+      protocolMocks.loadState.mockClear();
+      await service.execVirtualSubAgent(params);
+      expect(protocolMocks.loadState).not.toHaveBeenCalled();
+      expect(spy.mock.calls.at(-1)?.[0]).not.toHaveProperty('clientProtocol');
+
+      protocolMocks.enabled = true;
+      protocolMocks.loadState.mockResolvedValue(undefined);
+      await service.execVirtualSubAgent(params);
+      expect(spy.mock.calls.at(-1)?.[0]).not.toHaveProperty('clientProtocol');
+
+      protocolMocks.loadState.mockRejectedValue(new Error('parent unavailable'));
+      await service.execVirtualSubAgent(params);
+      expect(spy.mock.calls.at(-1)?.[0]).not.toHaveProperty('clientProtocol');
+
+      mockOperationFindById.mockResolvedValue({ trigger: 'chat' });
+      protocolMocks.loadState.mockClear();
+      await service.execVirtualSubAgent(params);
+      expect(protocolMocks.loadState).not.toHaveBeenCalled();
+      expect(spy.mock.calls.at(-1)?.[0]).not.toHaveProperty('clientProtocol');
+    });
     it('should create Thread with correct parameters', async () => {
       // Mock execAgent to return success
       vi.spyOn(service, 'execAgent').mockResolvedValue({

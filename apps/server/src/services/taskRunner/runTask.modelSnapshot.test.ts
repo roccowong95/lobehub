@@ -9,8 +9,21 @@ const mocks = vi.hoisted(() => ({
   execAgent: vi.fn(),
   getAgentAgencyConfig: vi.fn(),
   getAgentModelConfig: vi.fn(),
+  taskMessagePatch: false,
 }));
 
+vi.mock('@/envs/app', async (importOriginal) => {
+  const original = await importOriginal<typeof import('@/envs/app')>();
+  return {
+    ...original,
+    appEnv: {
+      ...original.appEnv,
+      get TASK_AGENT_MESSAGE_PATCH() {
+        return mocks.taskMessagePatch;
+      },
+    },
+  };
+});
 vi.mock('@/database/models/task', () => ({ TaskModel: vi.fn() }));
 vi.mock('@/database/models/taskTopic', () => ({ TaskTopicModel: vi.fn() }));
 vi.mock('@/database/models/agent', () => ({
@@ -74,6 +87,7 @@ describe('TaskRunnerService.runTask model snapshot backfill', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.taskMessagePatch = false;
     vi.mocked(TaskTopicModel).mockImplementation(function () {
       return {
         add: vi.fn(),
@@ -84,6 +98,17 @@ describe('TaskRunnerService.runTask model snapshot backfill', () => {
     mocks.execAgent.mockResolvedValue({ operationId: 'op-1', success: true, topicId: 'tpc-1' });
     mocks.getAgentModelConfig.mockResolvedValue({ model: 'codex', provider: 'openai' });
     mocks.getAgentAgencyConfig.mockResolvedValue({ heterogeneousProvider: { type: 'codex' } });
+  });
+
+  it('opts Task runs into message patches only when explicitly enabled', async () => {
+    setupTask({});
+    await new TaskRunnerService(db, 'user-1').runTask({ taskId: 'T-1' });
+    expect(mocks.execAgent.mock.calls[0][0]).not.toHaveProperty('clientProtocol');
+
+    mocks.taskMessagePatch = true;
+    setupTask({});
+    await new TaskRunnerService(db, 'user-1').runTask({ taskId: 'T-1' });
+    expect(mocks.execAgent.mock.calls[1][0]).toEqual(expect.objectContaining({ clientProtocol: 2 }));
   });
 
   it('keeps a legacy model-only override and fills only its native provider', async () => {

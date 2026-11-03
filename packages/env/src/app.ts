@@ -104,6 +104,7 @@ export const getAppConfig = () => {
        * burned its fallback budget on 404s.
        */
       AGENT_GATEWAY_PROTOCOL: z.coerce.number().int().min(1).max(2).optional(),
+      TASK_AGENT_MESSAGE_PATCH: z.boolean().optional(),
       /**
        * Enable Queue-based Agent Runtime
        * When true, use QStash for async agent execution (production)
@@ -155,6 +156,7 @@ export const getAppConfig = () => {
       ENABLE_PAGE_COLLAB: process.env.ENABLE_PAGE_COLLAB === '1',
       AGENT_GATEWAY_URL: process.env.AGENT_GATEWAY_URL,
       AGENT_GATEWAY_PROTOCOL: process.env.AGENT_GATEWAY_PROTOCOL || undefined,
+      TASK_AGENT_MESSAGE_PATCH: process.env.TASK_AGENT_MESSAGE_PATCH === '1',
       AGENT_GATEWAY_INTERNAL_URL: process.env.AGENT_GATEWAY_INTERNAL_URL || undefined,
       enableQueueAgentRuntime: process.env.AGENT_RUNTIME_MODE === 'queue',
       TELEMETRY_DISABLED: process.env.TELEMETRY_DISABLED === '1',

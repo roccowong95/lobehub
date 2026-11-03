@@ -5,6 +5,20 @@ import type { ExecGroupMemberParams } from '@/server/services/agentRuntime/types
 
 import { AiAgentService } from '../index';
 
+const protocolMocks = vi.hoisted(() => ({ enabled: false, loadState: vi.fn() }));
+vi.mock('@/envs/app', async (importOriginal) => {
+  const original = await importOriginal<typeof import('@/envs/app')>();
+  return {
+    ...original,
+    appEnv: {
+      ...original.appEnv,
+      get TASK_AGENT_MESSAGE_PATCH() {
+        return protocolMocks.enabled;
+      },
+    },
+  };
+});
+
 // Mock trusted client to avoid server-side env access
 vi.mock('@/libs/trusted-client', () => ({
   generateTrustedClientToken: vi.fn().mockReturnValue(undefined),
@@ -101,6 +115,7 @@ const mockScheduleGroupMemberTimeout = vi.fn();
 vi.mock('@/server/services/agentRuntime', () => ({
   AgentRuntimeService: vi.fn().mockImplementation(function () {
     return {
+      getOperationClientProtocol: protocolMocks.loadState,
       createOperation: vi.fn().mockResolvedValue({
         autoStarted: true,
         messageId: 'queue-msg-1',
@@ -170,6 +185,8 @@ describe('AiAgentService.execGroupMember', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    protocolMocks.enabled = false;
+    protocolMocks.loadState.mockReset();
     mockThreadModel.create.mockResolvedValue({
       agentId: 'agt_carol',
       groupId: 'group-1',
@@ -182,6 +199,18 @@ describe('AiAgentService.execGroupMember', () => {
     mockOperationFindById.mockResolvedValue({ trigger: 'chat' });
     service = new AiAgentService({} as any, 'test-user-id');
   });
+
+  it.each(['in_group', 'isolated'] as const)(
+    'inherits an opted-in Task supervisor protocol for a %s member',
+    async (mode) => {
+      const spy = vi.spyOn(service, 'execAgent').mockResolvedValue(execAgentResult);
+      protocolMocks.enabled = true;
+      mockOperationFindById.mockResolvedValue({ trigger: 'task' });
+      protocolMocks.loadState.mockResolvedValue(2);
+      await service.execGroupMember(memberParams({ mode }));
+      expect(spy).toHaveBeenCalledWith(expect.objectContaining({ clientProtocol: 2 }));
+    },
+  );
 
   // G-05: a member answers to the approval mode the user picked for the turn.
   // A hard-coded headless let a member silently run a `humanIntervention:

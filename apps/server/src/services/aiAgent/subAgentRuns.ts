@@ -12,7 +12,9 @@ import type {
 import { isAgentOperationInFlight, ThreadStatus, ThreadType } from '@lobechat/types';
 import debug from 'debug';
 
+import { TopicTrigger } from '@/const/topic';
 import type { AgentOperationModel } from '@/database/models/agentOperation';
+import { appEnv } from '@/envs/app';
 import type { MessageModel } from '@/database/models/message';
 import type { ThreadModel } from '@/database/models/thread';
 import type { AgentRuntimeService } from '@/server/services/agentRuntime';
@@ -35,6 +37,23 @@ import type { InternalExecAgentParams } from './types';
 const HEADLESS_INTERVENTION: UserInterventionConfig = { approvalMode: 'headless' };
 
 const log = debug('lobe-server:ai-agent-service');
+
+/** Inherit the task's opt-in only when the parent actually declared v2. */
+const taskChildProtocol = async (
+  deps: SubAgentRunDeps,
+  parentOperationId: string | undefined,
+  isTask: boolean,
+): Promise<2 | undefined> => {
+  if (!appEnv.TASK_AGENT_MESSAGE_PATCH || !parentOperationId || !isTask)
+    return undefined;
+  try {
+    const protocol = await deps.agentRuntimeService.getOperationClientProtocol(parentOperationId);
+    return protocol === 2 ? 2 : undefined;
+  } catch (error) {
+    log('Failed to inherit task message protocol from parent: %O', error);
+    return undefined;
+  }
+};
 
 export interface SubAgentRunDeps {
   agentOperationModel: AgentOperationModel;
@@ -314,10 +333,12 @@ export const execAgentThreadRun = async (
   // original entry point (chat / bot / cli / eval / …). Lookup is best-effort
   // — a missing parent row falls back to undefined and the column stays null.
   let inheritedTrigger: string | undefined;
+  let parentIsTask = false;
   if (parentOperationId) {
     try {
       const parentOp = await deps.agentOperationModel.findById(parentOperationId);
       inheritedTrigger = parentOp?.trigger ?? undefined;
+      parentIsTask = inheritedTrigger === TopicTrigger.RunTask || !!parentOp?.taskId;
     } catch (error) {
       log('%s: failed to read parent operation trigger: %O', options.logScope, error);
     }
@@ -348,6 +369,8 @@ export const execAgentThreadRun = async (
     topicId,
   };
 
+  const clientProtocol = await taskChildProtocol(deps, parentOperationId, parentIsTask);
+
   // 4. Delegate to execAgent with threadId in appContext and hooks
   // The instruction will be created as user message in the Thread
   // Headless (skip human approval) unless the caller hands down the parent's
@@ -356,6 +379,7 @@ export const execAgentThreadRun = async (
   try {
     result = await deps.execAgent({
       agentId,
+      ...(clientProtocol && { clientProtocol }),
       appContext,
       autoStart: true,
       chatConfigOverride: options.chatConfig,
@@ -501,9 +525,11 @@ export const execAgentMember = async (
 
   // Inherit the supervisor op's trigger so member rows stay attributable.
   let inheritedTrigger: string | undefined;
+  let parentIsTask = false;
   try {
     const parentOp = await deps.agentOperationModel.findById(parentOperationId);
     inheritedTrigger = parentOp?.trigger ?? undefined;
+    parentIsTask = inheritedTrigger === TopicTrigger.RunTask || !!parentOp?.taskId;
   } catch (error) {
     log('execAgentMember: failed to read parent operation trigger: %O', error);
   }
@@ -511,6 +537,8 @@ export const execAgentMember = async (
   const speakerInstruction = instruction
     ? `<speaker name="Supervisor" />\n${instruction}`
     : 'Please respond to the group conversation based on the current context.';
+
+  const clientProtocol = await taskChildProtocol(deps, parentOperationId, parentIsTask);
 
   const appContext: NonNullable<InternalExecAgentParams['appContext']> = {
     groupId,
@@ -542,6 +570,7 @@ export const execAgentMember = async (
   // orchestration prompt into the group conversation as a real message.
   const result = await deps.execAgent({
     agentId,
+    ...(clientProtocol && { clientProtocol }),
     appContext,
     autoStart: true,
     disableTools,
