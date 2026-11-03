@@ -1,0 +1,58 @@
+name: Rocco verification
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [fix/rocco]
+    paths: [.github/workflows/rocco-verify.yml]
+
+permissions:
+  contents: read
+
+jobs:
+  regression:
+    name: Targeted regression checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.4.3'
+      - name: Install dependencies
+        run: |
+          npm install --global corepack@latest
+          corepack enable
+          pnpm install --no-frozen-lockfile
+      - name: Run targeted checks
+        run: >-
+          bun run check --lint --test
+          packages/model-runtime/src/providers/siliconcloud/index.ts
+          packages/model-runtime/src/providers/siliconcloud/index.test.ts
+          apps/server/src/services/taskRunner/index.ts
+          apps/server/src/services/taskRunner/runTask.modelSnapshot.test.ts
+          apps/server/src/services/aiAgent/subAgentRuns.ts
+          apps/server/src/services/aiAgent/__tests__/execSubAgent.test.ts
+          apps/server/src/services/aiAgent/__tests__/execGroupMember.test.ts
+          apps/server/src/services/agentRuntime/AgentRuntimeService/index.ts
+          packages/env/src/app.ts
+
+  image:
+    name: Build amd64 image
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Build without publishing
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64
+          push: false
+          labels: |
+            org.opencontainers.image.revision=${{ github.sha }}
