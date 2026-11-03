@@ -12,13 +12,13 @@ import { TRPCError } from '@trpc/server';
 import debug from 'debug';
 
 import { TopicTrigger } from '@/const/topic';
-import { appEnv } from '@/envs/app';
 import { AgentModel } from '@/database/models/agent';
 import { BriefModel } from '@/database/models/brief';
 import { TaskModel } from '@/database/models/task';
 import { TaskTopicModel } from '@/database/models/taskTopic';
 import { TopicModel } from '@/database/models/topic';
 import type { LobeChatDatabase } from '@/database/type';
+import { appEnv } from '@/envs/app';
 import { AiAgentService } from '@/server/services/aiAgent';
 import { resolveFailedRunStatus } from '@/server/services/goal/recoveryPolicy';
 import { resolveMissingTaskModelConfig } from '@/server/services/task/modelSnapshot';

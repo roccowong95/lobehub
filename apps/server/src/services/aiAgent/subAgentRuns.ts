@@ -14,9 +14,9 @@ import debug from 'debug';
 
 import { TopicTrigger } from '@/const/topic';
 import type { AgentOperationModel } from '@/database/models/agentOperation';
-import { appEnv } from '@/envs/app';
 import type { MessageModel } from '@/database/models/message';
 import type { ThreadModel } from '@/database/models/thread';
+import { appEnv } from '@/envs/app';
 import type { AgentRuntimeService } from '@/server/services/agentRuntime';
 import { hookDispatcher } from '@/server/services/agentRuntime/hooks';
 import type { AgentHook } from '@/server/services/agentRuntime/hooks/types';
@@ -44,8 +44,7 @@ const taskChildProtocol = async (
   parentOperationId: string | undefined,
   isTask: boolean,
 ): Promise<2 | undefined> => {
-  if (!appEnv.TASK_AGENT_MESSAGE_PATCH || !parentOperationId || !isTask)
-    return undefined;
+  if (!appEnv.TASK_AGENT_MESSAGE_PATCH || !parentOperationId || !isTask) return undefined;
   try {
     const protocol = await deps.agentRuntimeService.getOperationClientProtocol(parentOperationId);
     return protocol === 2 ? 2 : undefined;

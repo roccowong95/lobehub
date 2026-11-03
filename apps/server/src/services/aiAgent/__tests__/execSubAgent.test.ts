@@ -1,11 +1,13 @@
 import { ThreadStatus, ThreadType } from '@lobechat/types';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import type * as AppEnvModule from '@/envs/app';
+
 import { AiAgentService } from '../index';
 
 const protocolMocks = vi.hoisted(() => ({ enabled: false, loadState: vi.fn() }));
 vi.mock('@/envs/app', async (importOriginal) => {
-  const original = await importOriginal<typeof import('@/envs/app')>();
+  const original = await importOriginal<typeof AppEnvModule>();
   return {
     ...original,
     appEnv: {

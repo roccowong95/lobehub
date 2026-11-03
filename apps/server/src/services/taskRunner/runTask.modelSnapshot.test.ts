@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { TaskModel } from '@/database/models/task';
 import { TaskTopicModel } from '@/database/models/taskTopic';
+import type * as AppEnvModule from '@/envs/app';
 
 import { TaskRunnerService } from './index';
 
@@ -13,7 +14,7 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock('@/envs/app', async (importOriginal) => {
-  const original = await importOriginal<typeof import('@/envs/app')>();
+  const original = await importOriginal<typeof AppEnvModule>();
   return {
     ...original,
     appEnv: {
@@ -108,7 +109,9 @@ describe('TaskRunnerService.runTask model snapshot backfill', () => {
     mocks.taskMessagePatch = true;
     setupTask({});
     await new TaskRunnerService(db, 'user-1').runTask({ taskId: 'T-1' });
-    expect(mocks.execAgent.mock.calls[1][0]).toEqual(expect.objectContaining({ clientProtocol: 2 }));
+    expect(mocks.execAgent.mock.calls[1][0]).toEqual(
+      expect.objectContaining({ clientProtocol: 2 }),
+    );
   });
 
   it('keeps a legacy model-only override and fills only its native provider', async () => {
