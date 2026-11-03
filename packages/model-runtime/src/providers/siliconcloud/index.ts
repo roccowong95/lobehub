@@ -2,7 +2,7 @@ import { ModelProvider } from 'model-bank';
 
 import type { OpenAICompatibleFactoryOptions } from '../../core/openaiCompatibleFactory';
 import { createOpenAICompatibleRuntime } from '../../core/openaiCompatibleFactory';
-import type { ChatCompletionErrorPayload } from '../../types';
+import type { ChatCompletionErrorPayload, EmbeddingsOptions, EmbeddingsPayload } from '../../types';
 import { AgentRuntimeErrorType } from '../../types/error';
 import { processMultiProviderModelList } from '../../utils/modelParse';
 import { createSiliconCloudImage } from './createImage';
@@ -154,4 +154,14 @@ export const params = {
   provider: ModelProvider.SiliconCloud,
 } satisfies OpenAICompatibleFactoryOptions;
 
-export const LobeSiliconCloudAI = createOpenAICompatibleRuntime(params);
+export class LobeSiliconCloudAI extends createOpenAICompatibleRuntime(params) {
+  async embeddings(payload: EmbeddingsPayload, options?: EmbeddingsOptions) {
+    if (payload.model === 'BAAI/bge-m3' && payload.dimensions === 1024) {
+      // SiliconCloud rejects dimensions for BGE-M3, whose native output is already 1024-dimensional.
+      const { dimensions: _dimensions, ...nativePayload } = payload;
+      return super.embeddings(nativePayload, options);
+    }
+
+    return super.embeddings(payload, options);
+  }
+}
