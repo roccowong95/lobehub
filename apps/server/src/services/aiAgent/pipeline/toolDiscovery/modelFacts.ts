@@ -91,6 +91,7 @@ export const resolveModelContext = async (
         activeModelMetadata
           ? {
               abilities: activeModelMetadata.abilities,
+              contextWindowTokens: activeModelMetadata.contextWindowTokens,
               // Deployment-catalog providers resolve the request model by the
               // user-configured alias when present (merged over the bundled
               // card when the facts freeze).

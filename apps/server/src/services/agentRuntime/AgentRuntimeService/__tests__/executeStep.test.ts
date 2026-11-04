@@ -222,6 +222,35 @@ describe('AgentRuntimeService', () => {
       );
     });
 
+    it('uses the configured context window frozen for a custom model', async () => {
+      let capturedConfig: any;
+      const serviceWithFactory = new AgentRuntimeService(mockDb, mockUserId, {
+        agentFactory: (config) => {
+          capturedConfig = config;
+          return { runner: vi.fn() } as any;
+        },
+      });
+
+      await (serviceWithFactory as any).createAgentRuntime({
+        agentState: {
+          modelRuntimeConfig: {
+            model: 'gpt-6.1-terra',
+            modelFacts: {
+              model: 'gpt-6.1-terra',
+              provider: 'sub2api',
+              userModelRow: { contextWindowTokens: 800_000 },
+            },
+            provider: 'sub2api',
+          },
+        },
+        operationId: 'test-operation-1',
+        stepIndex: 1,
+      });
+
+      expect(capturedConfig.compressionConfig.maxWindowToken).toBe(800_000);
+      expect(getModelPropertyWithFallback).not.toHaveBeenCalled();
+    });
+
     it('should fall back to undefined maxWindowToken when model lookup misses', async () => {
       vi.mocked(getModelPropertyWithFallback).mockResolvedValueOnce(undefined);
 

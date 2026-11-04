@@ -29,9 +29,12 @@ vi.mock('@/business/client/model-bank/loadModels', () => ({
 vi.mock('@/server/services/agentSignal/featureGate', () => ({
   isAgentSignalEnabledForUser: vi.fn().mockResolvedValue(true),
 }));
+const { modelRowState } = vi.hoisted(() => ({
+  modelRowState: { row: undefined as { contextWindowTokens: number } | undefined },
+}));
 vi.mock('@/database/models/aiModel', () => ({
   AiModelModel: class {
-    findByIdAndProvider = vi.fn().mockResolvedValue(undefined);
+    findByIdAndProvider = vi.fn(async () => modelRowState.row);
   },
 }));
 vi.mock('@/database/models/aiProvider', () => ({
@@ -204,6 +207,7 @@ const lastEngineOptions = () =>
   vi.mocked(createServerAgentToolsEngine).mock.calls.at(-1)?.[1] as Record<string, any>;
 
 beforeEach(() => {
+  modelRowState.row = undefined;
   deviceGatewayState.isConfigured = false;
   chatGroupState.roster = [];
   projectState.coordinatorAgentId = 'coordinator-1';
@@ -218,6 +222,16 @@ beforeEach(() => {
 const functionTools = [
   { description: 'Look up the weather', name: 'getWeather', parameters: { type: 'object' } },
 ];
+
+describe('discoverTools — model snapshot', () => {
+  it('carries the configured context window from the existing model read', async () => {
+    modelRowState.row = { contextWindowTokens: 800_000 };
+
+    const result = await run().promise;
+
+    expect(result.modelFacts.userModelRow?.contextWindowTokens).toBe(800_000);
+  });
+});
 
 describe('discoverTools — disabled tools and client function tools', () => {
   it('skips discovery entirely but still registers client function tools', async () => {

@@ -1,7 +1,7 @@
 name: Rocco verification
 
 on:
-  workflow_dispatch:
+  workflow_dispatch: {}
   push:
     branches: [fix/rocco]
     tags: ['rocco-image-*']
@@ -44,6 +44,11 @@ jobs:
           packages/agent-runtime/src/agents/GeneralChatAgent.ts
           packages/agent-runtime/src/agents/__tests__/GeneralChatAgent.test.ts
           packages/locales/src/default/setting.ts
+          packages/types/src/agentExecution/modelFacts.ts
+          apps/server/src/services/aiAgent/pipeline/toolDiscovery/modelFacts.ts
+          apps/server/src/services/aiAgent/pipeline/toolDiscovery/index.branches.test.ts
+          apps/server/src/services/agentRuntime/AgentRuntimeService/runtimeFactory.ts
+          apps/server/src/services/agentRuntime/AgentRuntimeService/__tests__/executeStep.test.ts
 
   image:
     name: Build amd64 image

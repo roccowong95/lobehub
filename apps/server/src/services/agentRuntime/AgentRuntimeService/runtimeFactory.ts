@@ -150,13 +150,21 @@ export async function createAgentRuntime(
 ) {
   const state = agentState as AgentState | undefined;
   const modelRuntimeConfig = state?.modelRuntimeConfig;
+  // Reuse the model row frozen at operation creation instead of querying the
+  // database on each runtime step. Older operations still use the model bank.
+  const configuredContextWindowTokens =
+    modelRuntimeConfig?.modelFacts?.model === modelRuntimeConfig?.model &&
+    modelRuntimeConfig?.modelFacts?.provider === modelRuntimeConfig?.provider
+      ? modelRuntimeConfig.modelFacts.userModelRow?.contextWindowTokens
+      : undefined;
   const contextWindowTokens =
     modelRuntimeConfig?.model && modelRuntimeConfig?.provider
-      ? await getModelPropertyWithFallback<number | undefined>(
+      ? (configuredContextWindowTokens ??
+        (await getModelPropertyWithFallback<number | undefined>(
           modelRuntimeConfig.model,
           'contextWindowTokens',
           modelRuntimeConfig.provider,
-        )
+        )))
       : undefined;
 
   const world = state?.world;

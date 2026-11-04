@@ -16,6 +16,8 @@ export interface ModelCardFacts {
 export interface UserModelRowFacts {
   /** Stored as untyped JSON; a non-empty object replaces the card's abilities. */
   abilities?: unknown;
+  /** User-configured context window, frozen for the operation's compression budget. */
+  contextWindowTokens?: number | null;
   /**
    * User-configured deployment alias (`ai_models.config.deploymentName`).
    * Deployment-catalog providers (Azure, Volcengine Ark, Spark) address the
