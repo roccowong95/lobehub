@@ -61,6 +61,16 @@ describe('deliverBackgroundSubAgentResults', () => {
     vi.clearAllMocks();
   });
 
+  it('continues the original parent capability after its running marker was cleared', async () => {
+    const deps = createDeps({
+      pending: [finished('a', { state: { parentOperationId: 'source-op' } })],
+    });
+    await deliverBackgroundSubAgentResults(deps, { topicId: 'topic-1' });
+    expect(deps.execAgent).toHaveBeenCalledWith(
+      expect.objectContaining({ messageProtocolSourceOperationId: 'source-op' }),
+    );
+  });
+
   // The answer lands as a message from the sub-agent, and the parent runs off
   // that history — no made-up user turn.
   it('lands each answer as a message from its sender, then wakes the parent once', async () => {

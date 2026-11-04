@@ -50,6 +50,19 @@ jobs:
           apps/server/src/services/agentRuntime/AgentRuntimeService/runtimeFactory.ts
           apps/server/src/services/agentRuntime/AgentRuntimeService/__tests__/executeStep.test.ts
 
+          apps/server/src/services/aiAgent/pipeline/startOperation.ts
+          apps/server/src/services/aiAgent/pipeline/startOperation.messageProtocol.test.ts
+          apps/server/src/services/aiAgent/pipeline/execTurn.ts
+          apps/server/src/services/aiAgent/types.ts
+          apps/server/src/services/aiAgent/backgroundSubAgentDelivery.ts
+          apps/server/src/services/aiAgent/__tests__/backgroundSubAgentDelivery.test.ts
+          apps/server/src/services/agentRuntime/AgentRuntimeService/createOperation.ts
+          apps/server/src/services/agentRuntime/AgentRuntimeService/subAgentBridge.ts
+          apps/server/src/services/agentRuntime/AgentRuntimeService/__tests__/createOperation.test.ts
+          apps/server/src/services/taskResultBridge/index.ts
+          apps/server/src/routers/lambda/agentNotify.ts
+          packages/builtin-tool-lobe-agent/src/types.ts
+
   image:
     name: Build amd64 image
     if: startsWith(github.ref, 'refs/heads/')

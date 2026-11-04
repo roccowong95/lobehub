@@ -764,6 +764,7 @@ export const execAgentTurn = async (
         signal,
         stream,
         clientProtocol: params.clientProtocol,
+        messageProtocolSourceOperationId: params.messageProtocolSourceOperationId,
         includeFinalState: params.includeFinalState,
         llmExecutor: params.llmExecutor,
         topicStartOwnerOperationId: params.topicStartOwnerOperationId,

@@ -691,6 +691,7 @@ describe('AgentRuntimeService', () => {
           pluginError: undefined,
           pluginState: {
             model: 'gpt-test',
+            parentOperationId: 'parent-op-1',
             result: 'final answer',
             status: 'completed',
             threadId: 'thread-1',

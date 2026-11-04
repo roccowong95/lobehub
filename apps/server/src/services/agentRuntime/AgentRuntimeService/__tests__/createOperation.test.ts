@@ -117,6 +117,37 @@ describe('AgentRuntimeService', () => {
     hookDispatcher.unregister('test-operation-1');
   });
 
+  describe('message protocol after runtime TTL', () => {
+    it('loads the durable capability when the runtime state expired', async () => {
+      const receiver = {
+        coordinator: { loadAgentState: vi.fn().mockResolvedValue(null) },
+        agentOperationModel: {
+          findById: vi.fn().mockResolvedValue({ metadata: { clientProtocol: 2 } }),
+        },
+      };
+      expect(
+        await AgentRuntimeService.prototype.getOperationClientProtocol.call(
+          receiver as any,
+          'old-op',
+        ),
+      ).toBe(2);
+    });
+
+    it('keeps a legacy runtime state authoritative over durable metadata', async () => {
+      const receiver = {
+        coordinator: { loadAgentState: vi.fn().mockResolvedValue({ host: {} }) },
+        agentOperationModel: { findById: vi.fn() },
+      };
+      expect(
+        await AgentRuntimeService.prototype.getOperationClientProtocol.call(
+          receiver as any,
+          'old-op',
+        ),
+      ).toBe(1);
+      expect(receiver.agentOperationModel.findById).not.toHaveBeenCalled();
+    });
+  });
+
   describe('createOperation', () => {
     const mockParams: OperationCreationParams = {
       operationId: 'test-operation-1',
@@ -137,6 +168,17 @@ describe('AgentRuntimeService', () => {
       autoStart: true,
       initialMessages: [],
     };
+
+    it.each([1, 2] as const)(
+      'durably records message protocol %s at creation',
+      async (clientProtocol) => {
+        const record = vi.spyOn((service as any).completionLifecycle, 'recordStart');
+        await service.createOperation({ ...mockParams, autoStart: false, clientProtocol });
+        expect(record).toHaveBeenCalledWith(
+          expect.objectContaining({ metadata: expect.objectContaining({ clientProtocol }) }),
+        );
+      },
+    );
 
     it.each([undefined, 'parent-operation'])(
       'persists only caller hooks for a run with parent %s',

@@ -199,6 +199,8 @@ export interface CallSubAgentState extends SubAgentRunStats {
    * the result is still waiting for the parent's conversation to go idle.
    */
   deliveredAt?: string;
+  /** Original run whose wire capability a detached completion continues. */
+  parentOperationId?: string;
   /**
    * Live totals streamed from the running sub-agent, patched into the store in
    * memory only (never persisted). Held in its own key so it can't be mistaken

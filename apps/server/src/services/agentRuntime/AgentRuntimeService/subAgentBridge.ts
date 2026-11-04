@@ -190,7 +190,9 @@ export async function completeSubAgentBridge(
       preserveUsage: true,
       result: {
         content: resultContent,
-        error: failed ? formatErrorForMetadata(finalState?.error ?? params.errorMessage) : undefined,
+        error: failed
+          ? formatErrorForMetadata(finalState?.error ?? params.errorMessage)
+          : undefined,
         state: {
           model: finalState?.modelRuntimeConfig?.model,
           status: failed ? 'error' : 'completed',
@@ -207,6 +209,7 @@ export async function completeSubAgentBridge(
     });
 
     await recordBackgroundSubAgentResult(deps, {
+      parentOperationId,
       error: controlled.result.error,
       finalState,
       result: controlled.result.content,
@@ -297,6 +300,7 @@ async function recordBackgroundSubAgentResult(
   params: {
     error?: unknown;
     finalState?: AgentState;
+    parentOperationId: string;
     result: string;
     status: 'completed' | 'error';
     threadId: string;
@@ -306,6 +310,7 @@ async function recordBackgroundSubAgentResult(
   const { error, finalState, result, status, threadId, toolMessageId } = params;
   const state: Partial<CallSubAgentState> = {
     model: finalState?.modelRuntimeConfig?.model,
+    parentOperationId: params.parentOperationId,
     result,
     status,
     threadId,

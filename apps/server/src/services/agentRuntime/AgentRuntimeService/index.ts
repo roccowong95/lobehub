@@ -238,7 +238,12 @@ export class AgentRuntimeService {
 
   /** Return the message protocol declared for an operation, if one was declared. */
   async getOperationClientProtocol(operationId: string): Promise<1 | 2 | undefined> {
-    return (await this.coordinator.loadAgentState(operationId))?.host?.clientProtocol;
+    const state = await this.coordinator.loadAgentState(operationId);
+    if (state) return state.host?.clientProtocol ?? 1;
+    // Approvals and delayed callbacks may outlive the runtime state's TTL.
+    const protocol = (await this.agentOperationModel.findById(operationId))?.metadata
+      ?.clientProtocol;
+    return protocol === 1 || protocol === 2 ? protocol : undefined;
   }
 
   /**

@@ -140,6 +140,9 @@ export const deliverBackgroundSubAgentResults = async (
         agentId,
         appContext: { topicId },
         autoStart: true,
+        // The run settling now may be unrelated. Follow the newest delivered call's original parent.
+        messageProtocolSourceOperationId: pending.findLast((call) => claimed.has(call.id))?.state
+          .parentOperationId,
         parentMessageId,
         prompt: `Process ${results.length} finished background result${results.length === 1 ? '' : 's'}`,
         suppressUserMessage: true,

@@ -233,6 +233,8 @@ export interface InternalExecAgentParams extends ExecAgentParams {
    * instead of answering itself. Mirrors the client runtime's mention wiring.
    */
   mentionedAgents?: RuntimeMentionedAgent[];
+  /** Source capability for a server-created callback, without changing operation lineage. */
+  messageProtocolSourceOperationId?: string;
   /** Prepare dependent records after the operation is persisted, before any execution dispatch. */
   onOperationCreated?: (operationId: string) => Promise<void>;
   /** Parent message ID to continue from. Only takes effect when resume is true */

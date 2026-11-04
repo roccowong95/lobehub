@@ -112,6 +112,8 @@ export async function createOperation(
       chatGroupId: appContext?.groupId ?? null,
       maxSteps,
       metadata: {
+        // Keep the wire capability after the Redis runtime state expires.
+        clientProtocol: params.clientProtocol ?? 1,
         ...(durableHooks.length > 0 && { _hooks: durableHooks }),
         ...(appContext?.agentSignal ? { agentSignal: appContext.agentSignal } : {}),
         ...(interventionResolution

@@ -56,6 +56,8 @@ export interface StartOperationInput {
   /** Relay executor the calling client declared; lands on `state.host.llmExecutor`. */
   llmExecutor?: InternalExecAgentParams['llmExecutor'];
   maxSteps?: number;
+  /** Server-owned source for a callback that starts a new top-level turn. */
+  messageProtocolSourceOperationId?: string;
   onOperationCreated?: InternalExecAgentParams['onOperationCreated'];
   operationId: string;
   operationTaskId?: string;
@@ -198,11 +200,26 @@ export const startOperation = async (
       initialContext,
       prep,
     });
+    // Derived runs keep the source client capability. An explicit caller declaration wins.
+    let clientProtocol = input.clientProtocol;
+    const protocolSource =
+      approvalSourceOperationId ?? parentOperationId ?? input.messageProtocolSourceOperationId;
+    if (clientProtocol === undefined && protocolSource) {
+      try {
+        clientProtocol = await deps.agentRuntimeService.getOperationClientProtocol(protocolSource);
+      } catch (error) {
+        console.warn('[startOperation] Failed to inherit message protocol', {
+          operationId,
+          protocolSource,
+          error,
+        });
+      }
+    }
     const result = await deps.agentRuntimeService.createOperation({
       ...initSlots,
       acceptsFileWorks: fileWorksAccepted,
       acceptsMemberRuntimeEnd: memberRuntimeEndAccepted,
-      clientProtocol: input.clientProtocol,
+      clientProtocol,
       includeFinalState: input.includeFinalState,
       llmExecutor,
       agentConfig,

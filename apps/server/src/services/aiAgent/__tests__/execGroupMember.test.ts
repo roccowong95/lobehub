@@ -202,14 +202,16 @@ describe('AiAgentService.execGroupMember', () => {
   });
 
   it.each(['in_group', 'isolated'] as const)(
-    'inherits an opted-in Task supervisor protocol for a %s member',
+    'forwards the parent of a %s member to operation creation',
     async (mode) => {
       const spy = vi.spyOn(service, 'execAgent').mockResolvedValue(execAgentResult);
       protocolMocks.enabled = true;
       mockOperationFindById.mockResolvedValue({ trigger: 'task' });
       protocolMocks.loadState.mockResolvedValue(2);
       await service.execGroupMember(memberParams({ mode }));
-      expect(spy).toHaveBeenCalledWith(expect.objectContaining({ clientProtocol: 2 }));
+      expect(spy).toHaveBeenCalledWith(
+        expect.objectContaining({ parentOperationId: memberParams({ mode }).parentOperationId }),
+      );
     },
   );
 

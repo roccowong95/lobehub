@@ -431,6 +431,7 @@ export const createAgentNotifyRouter = (
                 appContext: { threadId, topicId },
                 parentMessageId: resolvedMessageId,
                 prompt: '',
+                messageProtocolSourceOperationId: remoteOperationId,
                 resume: true,
                 trigger: RequestTrigger.Notify,
               });
@@ -466,6 +467,7 @@ export const createAgentNotifyRouter = (
               appContext: { threadId, topicId },
               parentMessageId: msg.id,
               prompt: '',
+              messageProtocolSourceOperationId: remoteOperationId,
               resume: true,
               trigger: RequestTrigger.Notify,
             });

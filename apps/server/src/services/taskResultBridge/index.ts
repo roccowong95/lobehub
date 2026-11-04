@@ -254,6 +254,7 @@ export class TaskResultBridgeService {
         agentId,
         appContext: { topicId: originTopicId },
         autoStart: true,
+        messageProtocolSourceOperationId: receipts[0].operationId,
         botContext,
         hooks,
         parentMessageId,
