@@ -49,7 +49,6 @@ jobs:
           apps/server/src/services/aiAgent/pipeline/toolDiscovery/index.branches.test.ts
           apps/server/src/services/agentRuntime/AgentRuntimeService/runtimeFactory.ts
           apps/server/src/services/agentRuntime/AgentRuntimeService/__tests__/executeStep.test.ts
-
           apps/server/src/services/aiAgent/pipeline/startOperation.ts
           apps/server/src/services/aiAgent/pipeline/startOperation.messageProtocol.test.ts
           apps/server/src/services/aiAgent/pipeline/execTurn.ts
@@ -59,6 +58,7 @@ jobs:
           apps/server/src/services/agentRuntime/AgentRuntimeService/createOperation.ts
           apps/server/src/services/agentRuntime/AgentRuntimeService/subAgentBridge.ts
           apps/server/src/services/agentRuntime/AgentRuntimeService/__tests__/createOperation.test.ts
+          apps/server/src/services/agentRuntime/AgentRuntimeService/__tests__/subAgentBridge.test.ts
           apps/server/src/services/taskResultBridge/index.ts
           apps/server/src/routers/lambda/agentNotify.ts
           packages/builtin-tool-lobe-agent/src/types.ts
