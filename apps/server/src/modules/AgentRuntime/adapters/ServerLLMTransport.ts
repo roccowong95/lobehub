@@ -733,6 +733,7 @@ export class ServerLLMTransport implements LLMTransport {
       agentShareVisitorIds: input.state.principal?.actor?.shareVisitor
         ? toAgentShareVisitorIds(input.state.principal?.actor?.shareVisitor)
         : undefined,
+      threadId: input.state.origin?.threadId,
       topicId: input.state.origin?.topicId,
       trigger: input.state.origin?.trigger,
       userAgent: input.state.principal?.audit?.userAgent,

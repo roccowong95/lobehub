@@ -38,6 +38,9 @@ jobs:
           apps/server/src/services/aiAgent/__tests__/execSubAgent.test.ts
           apps/server/src/services/aiAgent/__tests__/execGroupMember.test.ts
           apps/server/src/services/agentRuntime/AgentRuntimeService/index.ts
+          apps/server/src/modules/AgentRuntime/adapters/ServerLLMTransport.ts
+          apps/server/src/modules/AgentRuntime/adapters/serverCallLlmAttempt.ts
+          apps/server/src/modules/AgentRuntime/adapters/serverCallLlmAttempt.test.ts
           packages/env/src/app.ts
           packages/agent-runtime/src/utils/tokenCounter.ts
           packages/agent-runtime/src/utils/tokenCounter.test.ts

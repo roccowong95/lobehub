@@ -63,6 +63,7 @@ interface CreateServerCallLlmAttemptInput {
   operationLogId: string;
   provider: string;
   resolved: ServerCallLlmTooling['resolved'];
+  threadId?: string;
   topicId?: string;
   trigger?: unknown;
   /** User agent of the originating request, forwarded into the LLM-call metadata for auditing and spend attribution. */
@@ -175,6 +176,7 @@ export class ServerCallLlmAttempt {
   private toolCalls: MessageToolCall[] = [];
   private toolsCalling: ChatToolPayload[] = [];
   private readonly topicId?: string;
+  private readonly threadId?: string;
   private readonly trigger?: unknown;
   private usage?: ModelUsage;
 
@@ -194,6 +196,7 @@ export class ServerCallLlmAttempt {
     operationLogId,
     provider,
     resolved,
+    threadId,
     topicId,
     trigger,
     userAgent,
@@ -223,6 +226,7 @@ export class ServerCallLlmAttempt {
       events,
       operationLogId,
     });
+    this.threadId = threadId;
     this.topicId = topicId;
     this.trigger = trigger;
   }
@@ -349,6 +353,11 @@ export class ServerCallLlmAttempt {
       },
       diagnostics: this.runtimeDiagnostics,
       metadata: this.runtimeMetadata,
+      ...(this.topicId && {
+        requestHeaders: {
+          'session-id': this.threadId ? `${this.topicId}:${this.threadId}` : this.topicId,
+        },
+      }),
       signal: this.ctx.abortSignal,
       user: this.ctx.userId,
     };
