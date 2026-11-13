@@ -202,20 +202,23 @@ describe('ServerCallLlmAttempt', () => {
     { expected: 'topic-1:thread-1', threadId: 'thread-1', topicId: 'topic-1' },
     { expected: 'topic-1:thread-2', threadId: 'thread-2', topicId: 'topic-1' },
     { expected: undefined, topicId: undefined },
-  ])('sends a stable session header for $topicId and $threadId', async ({ expected, threadId, topicId }) => {
-    const { attempt, chat } = createAttempt(
-      async ({ callback }) => {
-        await callback?.onText?.('Answer');
-        await callback?.onCompletion?.({ text: '', usage: { totalOutputTokens: 1 } });
-      },
-      undefined,
-      { threadId, topicId },
-    );
+  ])(
+    'sends a stable session header for $topicId and $threadId',
+    async ({ expected, threadId, topicId }) => {
+      const { attempt, chat } = createAttempt(
+        async ({ callback }) => {
+          await callback?.onText?.('Answer');
+          await callback?.onCompletion?.({ text: '', usage: { totalOutputTokens: 1 } });
+        },
+        undefined,
+        { threadId, topicId },
+      );
 
-    await attempt.execute();
+      await attempt.execute();
 
-    expect(chat.mock.calls[0][1]?.requestHeaders?.['session-id']).toBe(expected);
-  });
+      expect(chat.mock.calls[0][1]?.requestHeaders?.['session-id']).toBe(expected);
+    },
+  );
 
   it('forwards clientIp / userAgent into the chat call metadata when provided', async () => {
     const { attempt, chat } = createAttempt(
