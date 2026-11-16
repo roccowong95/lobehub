@@ -112,8 +112,20 @@ export const convertOpenAIResponseInputs = async (
         }
       }
 
-      // if message is assistant messages with tool calls , transform it to function type item
+      // Preserve visible commentary before its tool calls so subsequent turns know
+      // what the user has already been told, even if strict pairing drops a call.
       if (message.role === 'assistant' && message.tool_calls && message.tool_calls?.length > 0) {
+        const content =
+          typeof message.content === 'string'
+            ? message.content
+            : (message.content || [])
+                .flatMap((part) => (part.type === 'text' && part.text ? [part.text] : []))
+                .join('\n\n');
+
+        if (content.length > 0) {
+          items.push({ content, role: 'assistant' });
+        }
+
         const toolCalls = strictToolPairing
           ? message.tool_calls.filter((tool) => !!tool.id && pairedToolOutputIds.has(tool.id))
           : message.tool_calls;
