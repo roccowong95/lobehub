@@ -82,7 +82,6 @@ export const CredsManifest: BuiltinToolManifest = {
             maxItems: 10,
             minItems: 1,
             type: 'array',
-            uniqueItems: true,
           },
           key: {
             description:

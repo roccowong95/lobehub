@@ -27,6 +27,12 @@ describe('requestCredsInput', () => {
     ]);
   });
 
+  it('omits the unsupported uniqueItems keyword from the tool schema', () => {
+    const api = CredsManifest.api.find((item) => item.name === CredsApiName.requestCredsInput);
+
+    expect(api?.parameters).not.toHaveProperty('properties.fieldNames.uniqueItems');
+  });
+
   it('no longer offers an API that takes credential values as arguments', () => {
     expect(CredsManifest.api.map((item) => item.name)).not.toContain('saveCreds');
     for (const api of CredsManifest.api) {
